@@ -36,6 +36,10 @@ def _write_to_json_file(data):
 @app.post("/discs/", response_model=Disc)
 def create_disc(disc: Disc):
     disc_dict = disc.dict()
+    # Check if a disc with the same name already exists
+    if any(existing_disc['Name'] == disc_dict['Name'] for existing_disc in discs):
+        raise HTTPException(status_code=400, detail="Disc with this name already exists")
+    
     discs.append(disc_dict)
     _write_to_json_file(discs)
     return disc
@@ -44,31 +48,34 @@ def create_disc(disc: Disc):
 def read_discs():
     return discs
 
-@app.get("/discs/{disc_id}", response_model=Disc)
-def read_disc(disc_id: int):
+@app.get("/discs/{disc_name}", response_model=Disc)
+def read_disc(disc_name: str):
     try:
-        return discs[disc_id]
-    except IndexError:
+        return next(disc for disc in discs if disc['Name'] == disc_name)
+    except StopIteration:
         raise HTTPException(status_code=404, detail="Disc not found")
 
-@app.put("/discs/{disc_id}", response_model=Disc)
-def update_disc(disc_id: int, disc: Disc):
+@app.put("/discs/{disc_name}", response_model=Disc)
+def update_disc(disc_name: str, disc: Disc):
     try:
-        existing_disc = discs[disc_id]
+        existing_disc = next(disc for disc in discs if disc['Name'] == disc_name)
         updated_disc = existing_disc.copy()
         updated_disc.update(disc.dict())
-        discs[disc_id] = updated_disc
+        discs.remove(existing_disc)
+        discs.append(updated_disc)
         _write_to_json_file(discs)
         return updated_disc
-    except IndexError:
+    except StopIteration:
         raise HTTPException(status_code=404, detail="Disc not found")
 
-@app.delete("/discs/{disc_id}", response_model=Disc)
-def delete_disc(disc_id: int):
+@app.delete("/discs/{disc_name}", response_model=Disc)
+def delete_disc(disc_name: str):
     try:
-        deleted_disc = discs.pop(disc_id)
+        deleted_disc = next(disc for disc in discs if disc['Name'] == disc_name)
+        discs.remove(deleted_disc)
         _write_to_json_file(discs)
         return deleted_disc
-    except IndexError:
+    except StopIteration:
         raise HTTPException(status_code=404, detail="Disc not found")
+
 
