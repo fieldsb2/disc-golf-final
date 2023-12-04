@@ -50,6 +50,7 @@ def read_disc(disc_name: str):
 
 @app.post("/discs/", response_model=Disc)
 def create_disc(disc: Disc):
+    print("Received payload:", disc.model_dump())
     disc_dict = disc.model_dump()
     if any(existing_disc["Name"] == disc_dict["Name"] for existing_disc in master_list):
         raise HTTPException(status_code=400, detail="Disc with this name already exists")

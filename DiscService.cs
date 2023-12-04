@@ -76,15 +76,19 @@ namespace DiscBagProject
         {
             try
             {
-                // Serialize the disc object to JSON manually
-                string jsonDisc = JsonConvert.SerializeObject(disc);
+                var jsonSettings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                };
+
+                string jsonDisc = JsonConvert.SerializeObject(disc, jsonSettings);
                 string apiUrl = $"/discs/";
 
                 // Create a StringContent with the serialized JSON
                 StringContent content = new StringContent(jsonDisc, Encoding.UTF8, "application/json");
 
                 // Send the POST request
-                HttpResponseMessage response = await httpClient.PostAsJsonAsync(apiUrl, disc);
+                HttpResponseMessage response = await httpClient.PostAsync(apiUrl, content);
 
                 // Ensure the request was successful
                 response.EnsureSuccessStatusCode();
@@ -99,12 +103,28 @@ namespace DiscBagProject
 
 
 
+
         public async Task<bool> UpdateDiscAsync(string name, DiscModel updatedDisc)
         {
             try
             {
-                var response = await httpClient.PutAsJsonAsync($"/discs/{name}", updatedDisc);
+                var jsonSettings = new JsonSerializerSettings
+                {
+                    NullValueHandling = NullValueHandling.Ignore
+                };
+
+                string jsonUpdatedDisc = JsonConvert.SerializeObject(updatedDisc, jsonSettings);
+                string apiUrl = $"/discs/{name}";
+
+                // Create a StringContent with the serialized JSON
+                StringContent content = new StringContent(jsonUpdatedDisc, Encoding.UTF8, "application/json");
+
+                // Send the PUT request
+                HttpResponseMessage response = await httpClient.PutAsync(apiUrl, content);
+
+                // Ensure the request was successful
                 response.EnsureSuccessStatusCode();
+
                 return true;
             }
             catch (Exception)
@@ -112,6 +132,7 @@ namespace DiscBagProject
                 return false;
             }
         }
+
 
         public async Task<bool> DeleteDiscAsync(string name)
         {

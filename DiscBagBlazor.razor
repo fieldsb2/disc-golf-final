@@ -9,6 +9,7 @@
     <div>
         <input @bind="newDiscName" placeholder="Enter existing disc name" />
         <button @onclick="AddExistingDiscToBag">Add Existing Disc to Bag</button>
+        <button @onclick="ShowCreateNewDiscForm">Create New Disc</button>
         @if (!showAllDiscs)
         {
             <button @onclick="DisplayAllDiscs">Show all discs</button>
@@ -26,6 +27,56 @@
                 }
             </ul>
         }
+
+        @if (showCreateNewDiscForm)
+    {
+        <div>
+            <h4>Create New Disc</h4>
+            <div>
+                <label for="manufacturer">Manufacturer:</label>
+                <input @bind="newDisc.Manufacturer" />
+            </div>
+            <div>
+                <label for="name">Name:</label>
+                <input @bind="newDisc.Name" />
+            </div>
+            <div>
+                <label for="speed">Speed:</label>
+                <input @bind="newDisc.Speed" />
+            </div>
+            <div>
+                <label for="glide">Glide:</label>
+                <input @bind="newDisc.Glide" />
+            </div>
+            <div>
+                <label for="turn">Turn:</label>
+                <input @bind="newDisc.Turn" />
+            </div>
+            <div>
+                <label for="fade">Fade:</label>
+                <input @bind="newDisc.Fade" />
+            </div>
+            <div>
+                <label for="diameter">Diameter:</label>
+                <input @bind="newDisc.Diameter" />
+            </div>
+            <div>
+                <label for="height">Height:</label>
+                <input @bind="newDisc.Height" />
+            </div>
+            <div>
+                <label for="rimdepth">Rim Depth:</label>
+                <input @bind="newDisc.RimDepth" />
+            </div>
+            <div>
+                <label for="rimwidth">Rim Width:</label>
+                <input @bind="newDisc.RimWidth" />
+            </div>
+
+            <button @onclick="CreateNewDisc">Submit</button>
+            <button @onclick="HideCreateNewDiscForm">Cancel</button>
+        </div>
+    }
     </div>
 }
 
@@ -67,6 +118,9 @@
         }
     </div>
 
+    <div>
+        <button @onclick="ShowUpdateForm">Update Disc</button>
+    </div>
     <div>
         <button @onclick="ShowCreateNewDiscForm">Create New Disc</button>
     </div>
@@ -122,27 +176,85 @@
         </div>
     }
 
-    <div>
-        <button @onclick="UpdateSelectedDisc">Update Selected Disc</button>
-    </div>
+    <!-- Display the form when the button is clicked -->
+    @if (selectedDisc != null && showUpdateForm)
+    {
+        <div>
+            <h4>Update Disc</h4>
+            <div>
+                <label for="Manufacturer">Manufacturer:</label>
+                <input @bind="selectedDisc.Manufacturer" />
+            </div>
+            <div>
+                <label for="name">Name:</label>
+                <input @bind="selectedDisc.Name" />
+            </div>
+            <div>
+                <label for="speed">Speed:</label>
+                <input @bind="selectedDisc.Speed" />
+            </div>
+            <div>
+                <label for="glide">Glide:</label>
+                <input @bind="selectedDisc.Glide" />
+            </div>
+            <div>
+                <label for="turn">Turn:</label>
+                <input @bind="selectedDisc.Turn" />
+            </div>
+            <div>
+                <label for="fade">Fade:</label>
+                <input @bind="selectedDisc.Fade" />
+            </div>
+            <div>
+                <label for="diameter">Diameter:</label>
+                <input @bind="selectedDisc.Diameter" />
+            </div>
+            <div>
+                <label for="height">Height:</label>
+                <input @bind="selectedDisc.Height" />
+            </div>
+            <div>
+                <label for="rimdepth">Rim Depth:</label>
+                <input @bind="selectedDisc.RimDepth" />
+            </div>
+            <div>
+                <label for="rimwidth">Rim Width:</label>
+                <input @bind="selectedDisc.RimWidth" />
+            </div>
+
+            <button @onclick="UpdateSelectedDisc">Submit</button>
+            <button @onclick="HideSelectedDisc">Cancel</button>
+        </div>
+    }
+    @if (showNoDiscSelectedError && selectedDisc == null)
+    {
+        <div>
+            <p>No disc selected for update. Please select a disc to update.</p>
+        </div>
+    }
+
 }
 
 @code {
     private List<DiscModel> discsInBag = new List<DiscModel>();
     private List<DiscModel> allDiscs = new List<DiscModel>();
     private string newDiscName = "";
-    private DiscModel selectedDisc;
+    private DiscModel? selectedDisc;
     private string newDiscNameForNewDisc = "";
     private bool showAllDiscs = false;
     private bool isDiscClicked = false;
+    private bool isUpdating = false;
     private bool showCreateNewDiscForm = false;
+    private bool showUpdateForm = false;
+    private bool showNoDiscSelectedError = false;
     private DiscModel newDisc = new DiscModel();
+    private DiscModel updatedDisc = new DiscModel();
 
     private void HideSelectedDisc()
     {
-        // Reset the selectedDisc variable to hide the selected information
         selectedDisc = null;
         isDiscClicked = false;
+        showUpdateForm = false;
     }
 
     private void ShowCreateNewDiscForm()
@@ -155,6 +267,21 @@
         showCreateNewDiscForm = false;
         // Clear the input fields when the form is hidden
         newDisc = new DiscModel();
+    }
+
+    private void ShowUpdateForm()
+    {
+        if (selectedDisc != null)
+        {
+            showUpdateForm = true;
+            // Reset the error message when the form is shown
+            showNoDiscSelectedError = false;
+        }
+        else
+        {
+            showNoDiscSelectedError = true;
+        }
+
     }
 
     private async Task AddExistingDiscToBag()
@@ -220,8 +347,20 @@
     {
         try
         {
+            var newDiscWithoutDistance = new DiscModel
+                {
+                    Name = newDisc.Name,
+                    Speed = newDisc.Speed,
+                    Glide = newDisc.Glide,
+                    Turn = newDisc.Turn,
+                    Fade = newDisc.Fade,
+                    Diameter = newDisc.Diameter,
+                    Height = newDisc.Height,
+                    RimDepth = newDisc.RimDepth,
+                    RimWidth = newDisc.RimWidth
+                };
             // Make an API request to create a new disc
-            bool created = await discService.CreateDiscAsync(newDisc);
+            bool created = await discService.CreateDiscAsync(newDiscWithoutDistance);
 
             if (created)
             {
@@ -262,15 +401,49 @@
     {
         if (selectedDisc != null)
         {
-            var updatedDisc = new DiscModel
+            try
             {
-                // Set properties of the updated disc accordingly
-            };
+                showUpdateForm = false;
 
-            if (await discService.UpdateDiscAsync(selectedDisc.Name, updatedDisc))
-            {
-                await LoadDiscsInBag();
+                updatedDisc.Manufacturer = selectedDisc.Manufacturer;
+                updatedDisc.Name = selectedDisc.Name;
+                updatedDisc.Speed = selectedDisc.Speed;
+                updatedDisc.Glide = selectedDisc.Glide;
+                updatedDisc.Turn = selectedDisc.Turn;
+                updatedDisc.Fade = selectedDisc.Fade;
+                updatedDisc.Diameter = selectedDisc.Diameter;
+                updatedDisc.Height = selectedDisc.Height;
+                updatedDisc.RimDepth = selectedDisc.RimDepth;
+                updatedDisc.RimWidth = selectedDisc.RimWidth;
+                // Make an API request to update the selected disc
+                bool updated = await discService.UpdateDiscAsync(updatedDisc.Name, updatedDisc);
+
+                if (updated)
+                {
+
+                    // Reload discs in bag after successful update
+                    await LoadDiscsInBag();
+                    // Reset the selectedDisc and updatedDisc variables
+                    selectedDisc = null;
+                    updatedDisc = new DiscModel();
+                }
+                else
+                {
+                    ShowErrorMessage("Failed to update disc. Please try again.");
+                }
             }
+            catch (Exception ex)
+            {
+                ShowErrorMessage($"An error occurred: {ex.Message}");
+            }
+        }
+        else
+        {
+            showNoDiscSelectedError = true;
+            StateHasChanged();
+            await Task.Delay(10000);
+            showNoDiscSelectedError = false;
+            StateHasChanged();
         }
     }
 
@@ -291,9 +464,3 @@
         Console.WriteLine($"Error: {message}");
     }
 }
-
-
-
-
-
-
