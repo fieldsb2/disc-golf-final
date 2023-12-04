@@ -8,9 +8,9 @@ import json
 
 app = FastAPI()
 
-origins = ["http://localhost:7112"
-           "http://localhost:7112/discbag/inbag"
-           "http://localhost:7112/discbag/inbag/"
+origins = ["http://localhost:7112",
+           "http://localhost:7112/discbag/inbag",
+           "http://localhost:7112/discbag/inbag/",
            "http://localhost:7112/discbag"]  # Replace with your frontend URL
 app.add_middleware(
     CORSMiddleware,
@@ -50,7 +50,7 @@ def read_disc(disc_name: str):
 
 @app.post("/discs/", response_model=Disc)
 def create_disc(disc: Disc):
-    disc_dict = disc.dict()
+    disc_dict = disc.model_dump()
     if any(existing_disc["Name"] == disc_dict["Name"] for existing_disc in master_list):
         raise HTTPException(status_code=400, detail="Disc with this name already exists")
     master_list.append(disc_dict)
@@ -76,7 +76,6 @@ def delete_disc(disc_name: str):
     raise HTTPException(status_code=404, detail="Disc not found")
 
 
-# Bag routes
 # Bag routes
 @app.get("/inbag", response_model=List[Disc])
 def read_discs_in_bag():
