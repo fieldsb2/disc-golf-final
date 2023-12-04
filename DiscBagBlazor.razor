@@ -1,6 +1,98 @@
 ﻿@page "/discbag"
 @inject DiscService discService
 
+<style>
+    /* Body styles */
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Header styles */
+    h3 {
+        color: #fff;
+        text-align: center;
+        padding: 20px;
+        background-color: #004dcf;
+        margin-bottom: 20px;
+    }
+
+    /* Spacer styles */
+    .spacer {
+        margin-right: 5px;
+    }
+    
+    /* Form styles */
+    input, button {
+        margin-bottom: 10px;
+        padding: 8px;
+    }
+
+    button {
+        background-color: #4caf50;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+    /* Style for the remove button */
+    .remove-button {
+        background-color: #ff0f0f;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+        .remove-button:hover {
+            background-color: #c40000;
+        }
+
+    /* Style for discs */
+    .disc-in-bag {
+        background-color: #0070cf;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+    }
+        .disc-in-bag:hover {
+        background-color: #004dcf;
+        }
+
+    /* List styles */
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    li {
+        margin-bottom: 10px;
+    }
+
+    /* Selected disc information styles */
+    .selected-disc {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 20px;
+        background-color: #fff;
+    }
+
+    /* Error message styles */
+    .error-message {
+        color: #f00;
+        font-weight: bold;
+        margin-bottom: 10px;
+</style>
+
+
+
+
+
+
 <h3>Disc Bag</h3>
 
 @if (discsInBag.Count == 0)
@@ -9,10 +101,13 @@
     <div>
         <input @bind="newDiscName" placeholder="Enter existing disc name" />
         <button @onclick="AddExistingDiscToBag">Add Existing Disc to Bag</button>
+        <br>
         <button @onclick="ShowCreateNewDiscForm">Create New Disc</button>
+        <span class="spacer"></span>
         @if (!showAllDiscs)
         {
-            <button @onclick="DisplayAllDiscs">Show all discs</button>
+            <br>
+            <button @onclick="DisplayAllDiscs">Show All Discs</button>
         }
         @if (showAllDiscs)
         {
@@ -27,7 +122,6 @@
                 }
             </ul>
         }
-
         @if (showCreateNewDiscForm)
     {
         <div>
@@ -88,8 +182,8 @@
         @foreach (var disc in discsInBag)
         {
             <li>
-                <button @onclick="() => DisplayDiscInfo(disc.Name)">@disc.Name</button>
-                <button @onclick="() => RemoveDiscFromBag(disc.Name)">Remove</button>
+                <button @onclick="() => DisplayDiscInfo(disc.Name)" class="disc-in-bag">@disc.Name</button>
+                <button @onclick="() => RemoveDiscFromBag(disc.Name)" class="remove-button">Remove</button>
             </li>
         }
     </ul>
